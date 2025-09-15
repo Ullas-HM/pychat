@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ArtiBot Chat</title>
+  <style>
+    /* Floating Chat Widget Styles */
+    #chat-widget-container {position:fixed;bottom:20px;right:20px;width:350px;max-height:500px;background:#fff;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.2);display:flex;flex-direction:column;overflow:hidden;font-family:Arial,z-index:9999;display:none;}
+    #chat-header {background:#4CAF50;color:white;padding:10px;text-align:center;font-weight:bold;cursor:pointer;}
+    #chat-messages {flex:1;padding:10px;overflow-y:auto;background:#f5f5f5;}
+    #chat-input-container {display:flex;border-top:1px solid #ccc;}
+    #chat-input {flex:1;border:none;padding:10px;outline:none;}
+    #chat-send-btn {background:#4CAF50;color:white;border:none;padding:10px 15px;cursor:pointer;}
+    #chat-button {position:fixed;bottom:20px;right:20px;background:#4CAF50;color:white;border-radius:50%;width:60px;height:60px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:9999;font-size:30px;font-weight:bold;}
+  </style>
+</head>
+<body>
+
+<div id="chat-widget-container">
+  <div id="chat-header" onclick="toggleChat()">Chat with ArtiBot</div>
+  <div id="chat-messages"></div>
+  <div id="chat-input-container">
+    <input id="chat-input" type="text" placeholder="Type a message..." />
+    <button id="chat-send-btn" onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<div id="chat-button">💬</div>
+
+<script>
+const chatContainer = document.getElementById("chat-widget-container");
+const chatButton = document.getElementById("chat-button");
+const messagesEl = document.getElementById("chat-messages");
+const inputEl = document.getElementById("chat-input");
+
+chatButton.addEventListener("click", () => {
+    chatContainer.style.display = "flex";
+    chatButton.style.display = "none";
+});
+
+function toggleChat() {
+    chatContainer.style.display = "none";
+    chatButton.style.display = "flex";
+}
+
+async function sendMessage() {
+    const userMessage = inputEl.value.trim();
+    if(!userMessage) return;
+
+    messagesEl.innerHTML += `<div><b>You:</b> ${userMessage}</div>`;
+    inputEl.value = "";
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    try {
+        const response = await fetch("YOUR_RENDER_BACKEND_URL/chat", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({message: userMessage})
+        });
+        const data = await response.json();
+        messagesEl.innerHTML += `<div><b>Bot:</b> ${data.reply}</div>`;
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    } catch (err) {
+        messagesEl.innerHTML += `<div><b>Bot:</b> Error connecting to server</div>`;
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+}
+
+inputEl.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") sendMessage();
+});
+</script>
+
+</body>
+</html>
